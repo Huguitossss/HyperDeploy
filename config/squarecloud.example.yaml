@@ -1,0 +1,29 @@
+# Exemplo de configuração da Square Cloud
+# Copie este arquivo para squarecloud.yaml e preencha com seus dados
+
+api_key: "SUA_API_KEY_SQUARECLOUD_AQUI"  # API Key da sua conta Square Cloud
+
+# Como obter a API Key:
+# 1. Acesse https://squarecloud.app
+# 2. Faça login na sua conta
+# 3. Vá em "Minha Conta" > "API"
+# 4. Clique em "Gerar Nova Chave"
+# 5. Copie a chave gerada
+
+# Configurações avançadas (opcional)
+advanced:
+  timeout: 30                         # Timeout das requisições em segundos
+  retry_attempts: 3                   # Número de tentativas em caso de erro
+  cache_duration: 300                 # Duração do cache em segundos
+
+# Configurações de deploy automático
+auto_deploy:
+  enabled: true                       # Habilitar deploy automático após pagamento
+  start_after_deploy: true            # Iniciar aplicação após deploy
+  backup_before_deploy: false         # Fazer backup antes do deploy (se aplicável)
+
+# Configurações de validação de arquivos
+validation:
+  max_file_size_mb: 100              # Tamanho máximo do arquivo ZIP
+  allowed_extensions: [".zip"]        # Extensões permitidas
+  check_file_structure: true          # Verificar estrutura do arquivo 

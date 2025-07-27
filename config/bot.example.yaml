@@ -1,0 +1,29 @@
+# Exemplo de configuração do bot
+# Copie este arquivo para bot.yaml e preencha com seus dados
+
+bot_token: "SEU_TOKEN_DISCORD_AQUI"  # Token do seu bot Discord
+bot_name: "HyperDeploy"              # Nome do bot
+version: "1.0.7"                     # Versão do bot
+guild_id: SEU_GUILD_ID_AQUI          # ID do seu servidor Discord
+
+# Configurações de logging (opcional)
+logging:
+  level: "INFO"                      # DEBUG, INFO, WARNING, ERROR
+  file: "logs/hyperdeploy.log"       # Arquivo de log
+  max_size: "10MB"                   # Tamanho máximo do arquivo
+  backup_count: 5                    # Número de backups
+
+# Configurações de limpeza (opcional)
+cleanup:
+  qrcode_expiry_hours: 1             # Tempo de expiração dos QR Codes
+  upload_expiry_hours: 24            # Tempo de expiração dos uploads
+  cleanup_interval: 300              # Intervalo de limpeza (5 minutos)
+
+# Configurações de tickets (opcional)
+tickets:
+  category_id: 123456789012345678    # ID da categoria de tickets
+  auto_close_minutes: 10             # Tempo para fechar tickets automaticamente
+  max_file_size: "25MB"              # Tamanho máximo de arquivo
+
+# Configuração do Mercado Pago (PIX)
+mercadopago_access_token: "SEU_ACCESS_TOKEN_MERCADOPAGO_AQUI"  # Access token da sua conta Mercado Pago 

@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "auto_blacklist": false,
+  "auto_whitelist": false,
+  "copycat_detection": false,
+  "threshold": 90,
+  "cache_size": 1000
+} 
