@@ -1,40 +1,70 @@
-# Configurações pessoais
+# Arquivos de configuração com dados sensíveis
 config/bot.yaml
 config/squarecloud.yaml
 
-# Logs
-logs/*.log
-
-# Dados temporários
-uploads/
-qrcodes/
-backups/
-
-# Dados de usuários
+# Dados do sistema
 data/payments.json
 data/tickets.json
 data/user_keys.json
 data/server_keys.json
+data/admin_config.json
+data/log_channels.json
+data/automation.json
+data/whitelist.json
+data/blacklist.json
 
-# Cache e arquivos temporários
+# Arquivos temporários
+uploads/
+qrcodes/
+logs/
+backups/
+
+# Arquivos de sistema
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 .Python
-*.so
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
 
 # IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# Sistema
+# Sistema operacional
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Ambiente virtual
-venv/
-env/
-.env 
+# Arquivos de backup
+*.bak
+*.backup
+*.old
+
+# Arquivos de log
+*.log
+logs/
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.production
+
+# Arquivos de cache
+.cache/
+.pytest_cache/
+
+# Arquivos temporários do Python
+*.tmp
+*.temp 

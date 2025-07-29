@@ -362,7 +362,7 @@ O bot sincroniza automaticamente os comandos slash na inicialização.
 
 ### Contato
 - 🐛 **Issues**: [GitHub Issues](https://github.com/Huguitossss/HyperDeploy/issues)
-- 📧 **Email**: hugo.devbr@gmail.com
+- 📧 **Email**:*hugo.devbr@gmail.com*
 
 ---
 

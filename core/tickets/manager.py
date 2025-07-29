@@ -50,7 +50,15 @@ class TicketManager:
             if os.path.exists(self.tickets_file):
                 with open(self.tickets_file, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    self.active_tickets = {int(k): v for k, v in data.items()}
+                    # Verificar se é uma lista (formato antigo) e converter para dicionário
+                    if isinstance(data, list):
+                        logger.warning("Formato antigo de tickets.json detectado (lista). Convertendo para dicionário...")
+                        self.active_tickets = {}
+                        # Se havia dados na lista, tentar preservar (mas geralmente lista vazia)
+                        if data:
+                            logger.warning("Dados na lista serão perdidos na conversão")
+                    else:
+                        self.active_tickets = {int(k): v for k, v in data.items()}
                 logger.info(f"📋 {len(self.active_tickets)} tickets carregados")
             else:
                 self.save_tickets()
@@ -74,23 +82,54 @@ class TicketManager:
             if not guild:
                 logger.error(f"Guild não encontrada: {guild_id}")
                 return None
+            
+            # Verificar se o usuário existe no servidor
+            user = guild.get_member(user_id)
+            if not user:
+                logger.error(f"Usuário {user_id} não encontrado no servidor {guild_id}")
+                return None
+            
             category = discord.utils.get(guild.categories, name="Tickets")
             if not category:
                 category = await guild.create_category("Tickets")
                 logger.info(f"Categoria 'Tickets' criada em {guild.name}")
+            
             ticket_number = self.get_next_ticket_number()
             ticket_name = f"ticket-{ticket_number:03d}"
+            
+            # Configuração de permissões PRIVADAS - apenas para quem criou
             overwrites = {
-                guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True),
-                guild.get_member(user_id): discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True)
+                guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False),
+                guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True, manage_permissions=True),
+                user: discord.PermissionOverwrite(read_messages=True, send_messages=True, attach_files=True, view_channel=True)
             }
+            
+            # Verificar se o bot tem permissões para criar canais
+            if not guild.me.guild_permissions.manage_channels:
+                logger.error(f"Bot não tem permissão para gerenciar canais no servidor {guild.name}")
+                return None
+            
             channel = await guild.create_text_channel(
                 name=ticket_name,
                 category=category,
                 overwrites=overwrites,
-                topic=f"Ticket de deploy para <@{user_id}>"
+                topic=f"Ticket de deploy para {user.display_name} (ID: {user_id}) - PRIVADO"
             )
+            
+            # Verificar se o canal foi criado corretamente
+            if not channel:
+                logger.error(f"Falha ao criar canal de ticket para {user_id}")
+                return None
+            
+            # Verificar se as permissões foram aplicadas corretamente
+            channel_permissions = channel.overwrites
+            if guild.default_role in channel_permissions:
+                default_perms = channel_permissions[guild.default_role]
+                if default_perms.read_messages or default_perms.send_messages:
+                    logger.warning(f"Permissões do canal não aplicadas corretamente para {user_id}")
+                    # Tentar corrigir as permissões
+                    await channel.set_permissions(guild.default_role, read_messages=False, send_messages=False)
+            
             self.active_tickets[user_id] = {
                 "channel_id": channel.id,
                 "guild_id": guild_id,
@@ -109,7 +148,7 @@ class TicketManager:
             # Log de ticket criado
             await self.log_ticket_created(user_id, ticket_number, channel.id)
             
-            logger.info(f"Ticket criado: {ticket_name} para {user_id}")
+            logger.info(f"Ticket criado: {ticket_name} para {user_id} (PRIVADO)")
             return channel
         except Exception as e:
             logger.error(f"Erro ao criar ticket: {e}")
@@ -131,7 +170,7 @@ class TicketManager:
                 color=0x00ff00,
                 timestamp=datetime.now()
             )
-            embed.add_field(name="🎫 Número do Ticket", value=f"#{ticket_number:03d}", inline=True)
+            embed.add_field(name="�� Número do Ticket", value=f"#{ticket_number:03d}", inline=True)
             embed.add_field(name="💰 Preço do Deploy", value=f"R$ {price:.2f}", inline=True)
             embed.add_field(name="⏰ Expira em", value=f"{timeout_minutes} minutos", inline=True)
             
@@ -241,6 +280,41 @@ class TicketManager:
             return False
     def get_ticket_info(self, user_id: int) -> Optional[Dict]:
         return self.active_tickets.get(user_id)
+    
+    def has_ticket_access(self, user_id: int, channel_id: int) -> bool:
+        """Verifica se um usuário tem acesso ao ticket"""
+        try:
+            # Verificar se o usuário tem um ticket ativo
+            if user_id not in self.active_tickets:
+                return False
+            
+            ticket_info = self.active_tickets[user_id]
+            ticket_channel_id = ticket_info.get("channel_id")
+            
+            # Verificar se o canal do ticket corresponde
+            if ticket_channel_id != channel_id:
+                return False
+            
+            # Verificar se o ticket ainda está ativo
+            if ticket_info.get("status") != "open":
+                return False
+            
+            return True
+        except Exception as e:
+            logger.error(f"Erro ao verificar acesso ao ticket: {e}")
+            return False
+    
+    def is_ticket_owner(self, user_id: int, channel_id: int) -> bool:
+        """Verifica se um usuário é o dono do ticket"""
+        try:
+            ticket_info = self.active_tickets.get(user_id)
+            if not ticket_info:
+                return False
+            
+            return ticket_info.get("channel_id") == channel_id
+        except Exception as e:
+            logger.error(f"Erro ao verificar dono do ticket: {e}")
+            return False
     def get_active_tickets(self) -> List[Dict]:
         return list(self.active_tickets.values())
     def get_tickets_by_status(self, status: str) -> List[Dict]:

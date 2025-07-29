@@ -11,28 +11,50 @@ class AdminMainPanel(discord.ui.View):
         super().__init__(timeout=300)
         self.ctx = ctx
 
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
+
     @discord.ui.button(label="💰 Preços", style=discord.ButtonStyle.primary, custom_id="prices_btn")
     async def prices_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_prices_panel(), view=PricesPanel(self.ctx), ephemeral=True)
         await self.log_admin_action(interaction.user.id, "Acessou Painel de Preços")
 
     @discord.ui.button(label="⚙️ Configurações", style=discord.ButtonStyle.secondary, custom_id="config_btn")
     async def config_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_config_panel(), view=ConfigPanel(self.ctx), ephemeral=True)
         await self.log_admin_action(interaction.user.id, "Acessou Painel de Configurações")
 
     @discord.ui.button(label="📊 Status", style=discord.ButtonStyle.success, custom_id="status_btn")
     async def status_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_status_panel(), view=StatusPanel(self.ctx), ephemeral=True)
         await self.log_admin_action(interaction.user.id, "Acessou Painel de Status")
 
     @discord.ui.button(label="🧹 Limpeza", style=discord.ButtonStyle.danger, custom_id="cleanup_btn")
     async def cleanup_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_cleanup_panel(), view=CleanupPanel(self.ctx), ephemeral=True)
         await self.log_admin_action(interaction.user.id, "Acessou Painel de Limpeza")
 
     @discord.ui.button(label="🔒 Tickets", style=discord.ButtonStyle.danger, custom_id="tickets_btn")
     async def tickets_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_tickets_panel(), view=TicketsPanel(self.ctx), ephemeral=True)
         await self.log_admin_action(interaction.user.id, "Acessou Painel de Tickets")
 
@@ -179,20 +201,17 @@ def embed_tickets_panel():
 
 def embed_logs_panel():
     embed = discord.Embed(
-        title="📋 Sistema de Logs Organizados",
-        description="Configure e gerencie o sistema de logs do HyperDeploy",
+        title="📋 Sistema de Logs",
+        description="Gerencie o sistema de logs do HyperDeploy de forma simples e segura",
         color=0x9b59b6,
         timestamp=discord.utils.utcnow()
     )
-    embed.add_field(name="🔄 Ativar Logs", value="Criar categoria e canais automaticamente", inline=True)
-    embed.add_field(name="❌ Desativar Logs", value="Desconectar todos os canais", inline=True)
-    embed.add_field(name="👤 Ações", value="Log de ações dos usuários", inline=True)
-    embed.add_field(name="💳 Pagamentos", value="Log de transações PIX", inline=True)
-    embed.add_field(name="🚀 Deploy", value="Log de deploys de aplicações", inline=True)
-    embed.add_field(name="❌ Erros", value="Log de erros do sistema", inline=True)
-    embed.add_field(name="🔧 Admin", value="Log de ações administrativas", inline=True)
-    embed.add_field(name="📊 Status", value="Status dos canais configurados", inline=True)
-    embed.set_footer(text="HyperDeploy • Sistema de Logs Automático")
+    embed.add_field(name="🔄 Toggle Logs", value="Ativar/Desativar sistema completo", inline=True)
+    embed.add_field(name="📊 Informações", value="Ver status e canais configurados", inline=True)
+    embed.add_field(name="🔒 Segurança", value="Apenas administradores têm acesso", inline=True)
+    embed.add_field(name="📋 Tipos de Log", value="• Ações dos usuários\n• Transações PIX\n• Deploys\n• Erros do sistema\n• Ações administrativas", inline=False)
+    embed.add_field(name="⚡ Automático", value="Cria categoria e canais automaticamente com permissões seguras", inline=False)
+    embed.set_footer(text="HyperDeploy • Sistema de Logs Simplificado")
     return embed
 
 # Painel de Preços
@@ -200,6 +219,18 @@ class PricesPanel(discord.ui.View):
     def __init__(self, ctx):
         super().__init__(timeout=180)
         self.ctx = ctx
+
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
 
     async def log_admin_action(self, admin_id: int, action: str):
         """Log de ação administrativa"""
@@ -211,6 +242,8 @@ class PricesPanel(discord.ui.View):
 
     @discord.ui.button(label="💰 Alterar Preço", style=discord.ButtonStyle.primary)
     async def change_price(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         embed = discord.Embed(title="💰 Alterar Preço do Deploy", description="Selecione o novo preço:", color=0x00ff00)
         embed.add_field(name="Preço Atual", value=f"R$ {config_manager.get_fresh_deploy_price() if config_manager else 10.00:.2f}", inline=True)
         
@@ -233,6 +266,8 @@ class PricesPanel(discord.ui.View):
         ])
         
         async def preco_callback(interaction: discord.Interaction):
+            if not await self.check_admin_permissions(interaction):
+                return
             novo_preco = float(select.values[0])
             if config_manager:
                 config_manager.set_deploy_price(novo_preco)
@@ -248,6 +283,8 @@ class PricesPanel(discord.ui.View):
 
     @discord.ui.button(label="🔄 Resetar", style=discord.ButtonStyle.secondary)
     async def reset_price(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         if config_manager:
             config_manager.set_deploy_price(10.00)
             embed = discord.Embed(
@@ -272,10 +309,24 @@ class ConfigPanel(discord.ui.View):
         super().__init__(timeout=180)
         self.ctx = ctx
 
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
+
     # Botões de teste removidos - agora usando seletores funcionais
 
     @discord.ui.button(label="📁 Tamanho Máximo", style=discord.ButtonStyle.primary)
     async def max_file_size(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         embed = discord.Embed(title="📁 Alterar Tamanho Máximo", description="Selecione o novo tamanho:", color=0x00ff00)
         embed.add_field(name="Tamanho Atual", value=f"{config_manager.get_max_file_size_mb() if config_manager else 25} MB", inline=True)
         
@@ -295,6 +346,8 @@ class ConfigPanel(discord.ui.View):
         ])
         
         async def tamanho_callback(interaction: discord.Interaction):
+            if not await self.check_admin_permissions(interaction):
+                return
             novo_tamanho = int(select.values[0])
             if config_manager:
                 config_manager.set_max_file_size_mb(novo_tamanho)
@@ -309,6 +362,8 @@ class ConfigPanel(discord.ui.View):
 
     @discord.ui.button(label="⏰ Timeout Tickets", style=discord.ButtonStyle.secondary)
     async def ticket_timeout(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         embed = discord.Embed(title="⏰ Alterar Timeout Tickets", description="Selecione o novo timeout:", color=0x00ff00)
         embed.add_field(name="Timeout Atual", value=f"{config_manager.get_ticket_timeout_minutes() if config_manager else 30} minutos", inline=True)
         
@@ -327,6 +382,8 @@ class ConfigPanel(discord.ui.View):
         ])
         
         async def timeout_callback(interaction: discord.Interaction):
+            if not await self.check_admin_permissions(interaction):
+                return
             novo_timeout = int(select.values[0])
             if config_manager:
                 config_manager.set_ticket_timeout_minutes(novo_timeout)
@@ -341,6 +398,8 @@ class ConfigPanel(discord.ui.View):
 
     @discord.ui.button(label="💳 Timeout Pagamentos", style=discord.ButtonStyle.secondary)
     async def payment_timeout(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         embed = discord.Embed(title="💳 Alterar Timeout Pagamentos", description="Selecione o novo timeout:", color=0x00ff00)
         embed.add_field(name="Timeout Atual", value=f"{config_manager.get_payment_timeout_minutes() if config_manager else 30} minutos", inline=True)
         
@@ -359,6 +418,8 @@ class ConfigPanel(discord.ui.View):
         ])
         
         async def timeout_callback(interaction: discord.Interaction):
+            if not await self.check_admin_permissions(interaction):
+                return
             novo_timeout = int(select.values[0])
             if config_manager:
                 config_manager.set_payment_timeout_minutes(novo_timeout)
@@ -373,6 +434,8 @@ class ConfigPanel(discord.ui.View):
 
     @discord.ui.button(label="🚀 Deploy Automático", style=discord.ButtonStyle.success)
     async def toggle_auto_deploy(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         if config_manager:
             current = config_manager.is_auto_deploy_enabled()
             config_manager.set_auto_deploy(not current)
@@ -390,6 +453,8 @@ class ConfigPanel(discord.ui.View):
 
     @discord.ui.button(label="💳 Mercado Pago", style=discord.ButtonStyle.success)
     async def toggle_mercadopago(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         if config_manager:
             current = config_manager.is_mercadopago_enabled()
             config_manager.set_mercadopago_enabled(not current)
@@ -407,6 +472,8 @@ class ConfigPanel(discord.ui.View):
 
     @discord.ui.button(label="📋 Logs", style=discord.ButtonStyle.secondary)
     async def logs_btn(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await interaction.response.send_message(embed=embed_logs_panel(), view=LogsPanel(self.ctx), ephemeral=True)
 
     @discord.ui.button(label="❌ Fechar", style=discord.ButtonStyle.danger)
@@ -505,8 +572,22 @@ class StatusPanel(discord.ui.View):
         super().__init__(timeout=180)
         self.ctx = ctx
 
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
+
     @discord.ui.button(label="🔄 Atualizar", style=discord.ButtonStyle.primary)
     async def refresh(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         embed = embed_status_panel()
         await interaction.response.edit_message(embed=embed)
 
@@ -520,8 +601,22 @@ class CleanupPanel(discord.ui.View):
         super().__init__(timeout=180)
         self.ctx = ctx
 
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
+
     @discord.ui.button(label="🧹 Executar Limpeza", style=discord.ButtonStyle.primary)
     async def run_cleanup(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             import os
             import shutil
@@ -585,6 +680,8 @@ class CleanupPanel(discord.ui.View):
 
     @discord.ui.button(label="🧹 Limpar QR Codes", style=discord.ButtonStyle.danger)
     async def cleanup_qrcodes(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             from core.utils.cleanup import cleanup_qr_codes
             count = cleanup_qr_codes()
@@ -595,6 +692,8 @@ class CleanupPanel(discord.ui.View):
 
     @discord.ui.button(label="🧹 Limpar Uploads", style=discord.ButtonStyle.danger)
     async def cleanup_uploads(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             from core.utils.cleanup import cleanup_uploads
             count = cleanup_uploads()
@@ -605,6 +704,8 @@ class CleanupPanel(discord.ui.View):
 
     @discord.ui.button(label="🧹 Limpar Tudo", style=discord.ButtonStyle.danger)
     async def cleanup_all(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             from core.utils.cleanup import cleanup_all_files
             count = cleanup_all_files()
@@ -623,6 +724,18 @@ class TicketsPanel(discord.ui.View):
         super().__init__(timeout=180)
         self.ctx = ctx
 
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
+
     async def log_admin_action(self, admin_id: int, action: str):
         """Log de ação administrativa"""
         try:
@@ -633,6 +746,8 @@ class TicketsPanel(discord.ui.View):
 
     @discord.ui.button(label="🔒 Fechar Todos", style=discord.ButtonStyle.danger)
     async def close_all_tickets(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             from core.tickets.manager import ticket_manager
             if not ticket_manager:
@@ -686,6 +801,8 @@ class TicketsPanel(discord.ui.View):
 
     @discord.ui.button(label="📊 Estatísticas", style=discord.ButtonStyle.primary)
     async def ticket_stats(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         try:
             from core.tickets.manager import ticket_manager
             if not ticket_manager:
@@ -750,44 +867,48 @@ class LogsPanel(discord.ui.View):
         super().__init__(timeout=300)
         self.ctx = ctx
 
-    @discord.ui.button(label="🔄 Ativar Logs", style=discord.ButtonStyle.success)
-    async def enable_logs(self, button, interaction):
-        await self.setup_automatic_logs(interaction, enable=True)
+    async def check_admin_permissions(self, interaction):
+        """Verifica se o usuário tem permissões administrativas"""
+        if not interaction.user.guild_permissions.administrator:
+            embed = discord.Embed(
+                title="❌ Acesso Negado",
+                description="Apenas administradores podem usar este painel.",
+                color=0xff0000
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=5)
+            return False
+        return True
 
-    @discord.ui.button(label="❌ Desativar Logs", style=discord.ButtonStyle.danger)
-    async def disable_logs(self, button, interaction):
-        await self.setup_automatic_logs(interaction, enable=False)
+    def is_logs_enabled(self):
+        """Verifica se os logs estão ativos"""
+        try:
+            from core.logs.organized_logger import organized_logger
+            if not organized_logger:
+                return False
+            return len(organized_logger.log_channels) > 0
+        except:
+            return False
 
-    @discord.ui.button(label="👤 Ações", style=discord.ButtonStyle.primary)
-    async def actions_log(self, button, interaction):
-        await self.configure_log_channel(interaction, "actions", "Log de Ações")
+    @discord.ui.button(label="🔄 Toggle Logs", style=discord.ButtonStyle.primary)
+    async def toggle_logs(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
+        
+        is_enabled = self.is_logs_enabled()
+        await self.setup_automatic_logs(interaction, enable=not is_enabled)
 
-    @discord.ui.button(label="💳 Pagamentos", style=discord.ButtonStyle.primary)
-    async def payments_log(self, button, interaction):
-        await self.configure_log_channel(interaction, "payments", "Log de Pagamentos")
-
-    @discord.ui.button(label="🚀 Deploy", style=discord.ButtonStyle.primary)
-    async def deploy_log(self, button, interaction):
-        await self.configure_log_channel(interaction, "deploy", "Log de Deploy")
-
-    @discord.ui.button(label="❌ Erros", style=discord.ButtonStyle.danger)
-    async def errors_log(self, button, interaction):
-        await self.configure_log_channel(interaction, "errors", "Log de Erros")
-
-    @discord.ui.button(label="🔧 Admin", style=discord.ButtonStyle.secondary)
-    async def admin_log(self, button, interaction):
-        await self.configure_log_channel(interaction, "admin", "Log de Admin")
-
-    @discord.ui.button(label="📊 Status", style=discord.ButtonStyle.success)
-    async def status_log(self, button, interaction):
+    @discord.ui.button(label="📊 Informações", style=discord.ButtonStyle.secondary)
+    async def info_logs(self, button, interaction):
+        if not await self.check_admin_permissions(interaction):
+            return
         await self.show_log_status(interaction)
 
-    @discord.ui.button(label="❌ Fechar", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="❌ Fechar", style=discord.ButtonStyle.danger)
     async def close(self, button, interaction):
         await interaction.response.edit_message(content="Painel fechado.", embed=None, view=None)
 
     async def setup_automatic_logs(self, interaction, enable: bool):
-        """Configura logs automáticos criando categoria e canais"""
+        """Configura logs automáticos criando categoria e canais (apenas para administradores)"""
         try:
             from core.logs.organized_logger import organized_logger
             
@@ -801,12 +922,14 @@ class LogsPanel(discord.ui.View):
                 if success:
                     embed = discord.Embed(
                         title="✅ Logs Ativados",
-                        description="Categoria **HyperDeploy - Logs** criada com todos os canais configurados automaticamente!",
+                        description="Sistema de logs ativado com sucesso!",
                         color=0x00ff00
                     )
-                    embed.add_field(name="Categoria", value="HyperDeploy - Logs", inline=True)
-                    embed.add_field(name="Canais Criados", value="5 canais de log", inline=True)
-                    embed.set_footer(text="HyperDeploy • Sistema de Logs Automático")
+                    embed.add_field(name="📁 Categoria", value="HyperDeploy - Logs", inline=True)
+                    embed.add_field(name="📊 Canais", value="5 canais configurados", inline=True)
+                    embed.add_field(name="🔒 Segurança", value="Apenas Administradores", inline=True)
+                    embed.add_field(name="📋 Tipos de Log", value="• Ações dos usuários\n• Transações PIX\n• Deploys\n• Erros do sistema\n• Ações administrativas", inline=False)
+                    embed.set_footer(text="HyperDeploy • Sistema de Logs Seguro")
                     
                     await interaction.response.send_message(embed=embed, ephemeral=True, delete_after=10)
                 else:
@@ -818,7 +941,7 @@ class LogsPanel(discord.ui.View):
                 
                 embed = discord.Embed(
                     title="❌ Logs Desativados",
-                    description="Todos os canais de log foram desconectados. A categoria não será removida automaticamente.",
+                    description="Sistema de logs desativado. Os canais continuam existindo mas não receberão mais logs.",
                     color=0xff0000
                 )
                 embed.set_footer(text="HyperDeploy • Sistema de Logs")
@@ -829,7 +952,7 @@ class LogsPanel(discord.ui.View):
             await interaction.response.send_message(f"❌ Erro ao configurar logs: {e}", ephemeral=True, delete_after=5)
 
     async def create_log_category_and_channels(self, guild) -> bool:
-        """Cria categoria e canais de log automaticamente"""
+        """Cria categoria e canais de log automaticamente (apenas para administradores)"""
         try:
             from core.logs.organized_logger import organized_logger
             
@@ -838,34 +961,106 @@ class LogsPanel(discord.ui.View):
             category = discord.utils.get(guild.categories, name=category_name)
             
             if not category:
-                # Criar categoria
+                # Criar categoria com permissões restritas para administradores
+                overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False, view_channel=False),
+                    guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True, manage_permissions=True, view_channel=True)
+                }
+                
+                # Adicionar permissões para administradores
+                for role in guild.roles:
+                    if role.permissions.administrator:
+                        overwrites[role] = discord.PermissionOverwrite(
+                            read_messages=True, 
+                            send_messages=False,  # Apenas leitura para admins
+                            view_channel=True,
+                            attach_files=False,
+                            embed_links=False
+                        )
+                
                 category = await guild.create_category(
                     name=category_name,
-                    reason="Sistema de logs HyperDeploy"
+                    overwrites=overwrites,
+                    reason="Sistema de logs HyperDeploy - Apenas Administradores"
                 )
+            else:
+                # Se a categoria já existe, atualizar permissões para garantir segurança
+                overwrites = {
+                    guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False, view_channel=False),
+                    guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True, manage_permissions=True, view_channel=True)
+                }
+                
+                # Adicionar permissões para administradores
+                for role in guild.roles:
+                    if role.permissions.administrator:
+                        overwrites[role] = discord.PermissionOverwrite(
+                            read_messages=True, 
+                            send_messages=False,  # Apenas leitura para admins
+                            view_channel=True,
+                            attach_files=False,
+                            embed_links=False
+                        )
+                
+                await category.edit(overwrites=overwrites, reason="Atualização de permissões - Logs apenas para administradores")
             
             # Configurações dos canais
             log_channels = {
-                "actions": {"name": "👤-ações", "topic": "Log de ações dos usuários"},
-                "payments": {"name": "💳-pagamentos", "topic": "Log de transações PIX"},
-                "deploy": {"name": "🚀-deploy", "topic": "Log de deploys de aplicações"},
-                "errors": {"name": "❌-erros", "topic": "Log de erros do sistema"},
-                "admin": {"name": "🔧-admin", "topic": "Log de ações administrativas"}
+                "actions": {"name": "👤-ações", "topic": "Log de ações dos usuários (Apenas Administradores)"},
+                "payments": {"name": "💳-pagamentos", "topic": "Log de transações PIX (Apenas Administradores)"},
+                "deploy": {"name": "🚀-deploy", "topic": "Log de deploys de aplicações (Apenas Administradores)"},
+                "errors": {"name": "❌-erros", "topic": "Log de erros do sistema (Apenas Administradores)"},
+                "admin": {"name": "🔧-admin", "topic": "Log de ações administrativas (Apenas Administradores)"}
             }
             
-            # Criar ou obter canais
+            # Criar ou obter canais com permissões restritas
             for log_type, config in log_channels.items():
                 channel_name = config["name"]
                 channel = discord.utils.get(guild.channels, name=channel_name, category=category)
                 
                 if not channel:
-                    # Criar canal
+                    # Criar canal com permissões restritas
+                    channel_overwrites = {
+                        guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False, view_channel=False),
+                        guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True, manage_permissions=True, view_channel=True)
+                    }
+                    
+                    # Adicionar permissões para administradores
+                    for role in guild.roles:
+                        if role.permissions.administrator:
+                            channel_overwrites[role] = discord.PermissionOverwrite(
+                                read_messages=True, 
+                                send_messages=False,  # Apenas leitura para admins
+                                view_channel=True,
+                                attach_files=False,
+                                embed_links=False
+                            )
+                    
                     channel = await guild.create_text_channel(
                         name=channel_name,
                         category=category,
                         topic=config["topic"],
-                        reason=f"Canal de log {log_type} - HyperDeploy"
+                        overwrites=channel_overwrites,
+                        reason=f"Canal de log {log_type} - HyperDeploy (Apenas Administradores)"
                     )
+                else:
+                    # Se o canal já existe, atualizar permissões para garantir segurança
+                    channel_overwrites = {
+                        guild.default_role: discord.PermissionOverwrite(read_messages=False, send_messages=False, view_channel=False),
+                        guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True, manage_channels=True, manage_permissions=True, view_channel=True)
+                    }
+                    
+                    # Adicionar permissões para administradores
+                    for role in guild.roles:
+                        if role.permissions.administrator:
+                            channel_overwrites[role] = discord.PermissionOverwrite(
+                                read_messages=True, 
+                                send_messages=False,  # Apenas leitura para admins
+                                view_channel=True,
+                                attach_files=False,
+                                embed_links=False
+                            )
+                    
+                    await channel.edit(overwrites=channel_overwrites, topic=config["topic"], reason="Atualização de permissões - Logs apenas para administradores")
                 
                 # Configurar canal no sistema de logs
                 organized_logger.set_log_channel(log_type, channel.id)
@@ -873,7 +1068,7 @@ class LogsPanel(discord.ui.View):
             return True
             
         except Exception as e:
-            logger.error(f"Erro ao criar categoria e canais: {e}")
+            logger.error(f"Erro ao criar categoria e canais de log: {e}")
             return False
 
     async def configure_log_channel(self, interaction, log_type, log_name):
@@ -903,26 +1098,67 @@ class LogsPanel(discord.ui.View):
                 await interaction.response.send_message("❌ Sistema de logs não disponível", ephemeral=True, delete_after=5)
                 return
             
+            is_enabled = self.is_logs_enabled()
             info = organized_logger.get_log_channels_info()
             
-            embed = discord.Embed(
-                title="📊 Status dos Canais de Log",
-                description="Canais configurados para logs",
-                color=0x00ff00,
-                timestamp=discord.utils.utcnow()
-            )
-            
-            for log_type, channel_info in info['channels'].items():
-                status = "✅ Configurado" if channel_info['configured'] else "❌ Não configurado"
-                channel_name = channel_info['name'] if channel_info['configured'] else "N/A"
+            if is_enabled:
+                embed = discord.Embed(
+                    title="📊 Status dos Logs",
+                    description="Sistema de logs **ATIVO** - Canais configurados:",
+                    color=0x00ff00,
+                    timestamp=discord.utils.utcnow()
+                )
+                
+                # Mostrar canais configurados
+                configured_channels = []
+                for log_type, channel_info in info['channels'].items():
+                    if channel_info['configured']:
+                        channel_name = channel_info['name']
+                        configured_channels.append(f"• **{log_type.title()}:** {channel_name}")
+                
+                if configured_channels:
+                    embed.add_field(
+                        name="📋 Canais Ativos", 
+                        value="\n".join(configured_channels), 
+                        inline=False
+                    )
+                
                 embed.add_field(
-                    name=f"{log_type.title()}", 
-                    value=f"{status}\nCanal: {channel_name}", 
+                    name="📈 Estatísticas", 
+                    value=f"**{info['total_configured']}/{info['total_types']}** canais configurados", 
                     inline=True
                 )
+                embed.add_field(
+                    name="🔒 Segurança", 
+                    value="Apenas Administradores", 
+                    inline=True
+                )
+                embed.add_field(
+                    name="📁 Categoria", 
+                    value="HyperDeploy - Logs", 
+                    inline=True
+                )
+                
+            else:
+                embed = discord.Embed(
+                    title="📊 Status dos Logs",
+                    description="Sistema de logs **INATIVO** - Nenhum canal configurado",
+                    color=0xff0000,
+                    timestamp=discord.utils.utcnow()
+                )
+                embed.add_field(
+                    name="ℹ️ Como Ativar", 
+                    value="Clique em **🔄 Toggle Logs** para ativar o sistema automaticamente", 
+                    inline=False
+                )
             
-            embed.add_field(name="📈 Total", value=f"{info['total_configured']}/{info['total_types']} configurados", inline=False)
-            embed.set_footer(text="HyperDeploy • Status de Logs")
+            embed.add_field(
+                name="📋 Tipos de Log Disponíveis", 
+                value="• **Ações:** Interações dos usuários\n• **Pagamentos:** Transações PIX\n• **Deploy:** Deploys de aplicações\n• **Erros:** Erros do sistema\n• **Admin:** Ações administrativas", 
+                inline=False
+            )
+            
+            embed.set_footer(text="HyperDeploy • Sistema de Logs")
             await interaction.response.edit_message(embed=embed, view=None)
             
         except Exception as e:
@@ -1001,8 +1237,80 @@ class LogChannelModal(discord.ui.Modal):
 def setup(bot, guild_id=None):
     @bot.slash_command(name="admin", description="Painel administrativo (apenas admins).", guild_ids=[guild_id] if guild_id else None)
     async def admin(ctx):
-        if not ctx.author.guild_permissions.administrator:
-            await ctx.respond("❌ Apenas administradores podem usar este comando.", ephemeral=True)
-            return
-        
-        await ctx.respond(embed=embed_admin_main_panel(), view=AdminMainPanel(ctx), ephemeral=True) 
+        # VERIFICAÇÃO RIGOROSA DE PERMISSÕES ADMINISTRATIVAS
+        try:
+            # Verificar se o usuário tem permissão de administrador
+            if not ctx.author.guild_permissions.administrator:
+                embed = discord.Embed(
+                    title="❌ Acesso Negado",
+                    description="Apenas administradores podem usar este comando.",
+                    color=0xff0000
+                )
+                embed.add_field(name="🔒 Permissão Necessária", value="Administrador do Servidor", inline=True)
+                embed.add_field(name="👤 Seu Cargo", value=ctx.author.top_role.name if ctx.author.top_role else "Sem cargo", inline=True)
+                embed.set_footer(text="HyperDeploy • Sistema de Segurança")
+                
+                await ctx.respond(embed=embed, ephemeral=True, delete_after=10)
+                
+                # Log de tentativa de acesso não autorizado
+                try:
+                    from core.logs.organized_logger import log_action
+                    await log_action(
+                        user_id=ctx.author.id,
+                        action="Tentativa de Acesso Admin Negada",
+                        details=f"Usuário: {ctx.author.name}#{ctx.author.discriminator} | Servidor: {ctx.guild.name}",
+                        success=False
+                    )
+                except Exception as e:
+                    logger.error(f"Erro ao logar tentativa de acesso negado: {e}")
+                
+                return
+            
+            # Verificar se o bot tem permissões necessárias
+            bot_member = ctx.guild.get_member(bot.user.id)
+            if not bot_member:
+                await ctx.respond("❌ Erro: Bot não encontrado no servidor.", ephemeral=True, delete_after=5)
+                return
+            
+            required_permissions = [
+                "send_messages",
+                "embed_links", 
+                "attach_files",
+                "manage_channels",
+                "manage_permissions"
+            ]
+            
+            missing_permissions = []
+            for permission in required_permissions:
+                if not getattr(bot_member.guild_permissions, permission, False):
+                    missing_permissions.append(permission)
+            
+            if missing_permissions:
+                embed = discord.Embed(
+                    title="⚠️ Permissões Insuficientes",
+                    description="O bot precisa das seguintes permissões para funcionar corretamente:",
+                    color=0xff9900
+                )
+                embed.add_field(name="❌ Permissões Faltando", value="\n".join([f"• {perm}" for perm in missing_permissions]), inline=False)
+                embed.add_field(name="💡 Solução", value="Peça a um administrador para conceder essas permissões ao bot.", inline=False)
+                embed.set_footer(text="HyperDeploy • Configuração de Permissões")
+                
+                await ctx.respond(embed=embed, ephemeral=True, delete_after=15)
+                return
+            
+            # Log de acesso administrativo bem-sucedido
+            try:
+                from core.logs.organized_logger import log_admin
+                await log_admin(
+                    admin_id=ctx.author.id,
+                    action="Acessou Painel Administrativo"
+                )
+            except Exception as e:
+                logger.error(f"Erro ao logar acesso administrativo: {e}")
+            
+            # Acesso permitido - mostrar painel
+            await ctx.respond(embed=embed_admin_main_panel(), view=AdminMainPanel(ctx), ephemeral=True)
+            
+        except Exception as e:
+            logger.error(f"Erro na verificação de permissões admin: {e}")
+            await ctx.respond("❌ Erro interno ao verificar permissões. Tente novamente.", ephemeral=True, delete_after=5) 

@@ -16,7 +16,16 @@ class PaymentManager:
         try:
             if os.path.exists(self.payments_file):
                 with open(self.payments_file, 'r', encoding='utf-8') as f:
-                    self.payments = json.load(f)
+                    data = json.load(f)
+                    # Verificar se é uma lista (formato antigo) e converter para dicionário
+                    if isinstance(data, list):
+                        logger.warning("Formato antigo de payments.json detectado (lista). Convertendo para dicionário...")
+                        self.payments = {}
+                        # Se havia dados na lista, tentar preservar (mas geralmente lista vazia)
+                        if data:
+                            logger.warning("Dados na lista serão perdidos na conversão")
+                    else:
+                        self.payments = data
                 logger.info(f"{len(self.payments)} pagamentos carregados")
             else:
                 self.save_payments()

@@ -19,15 +19,35 @@ class DeployManager:
         """Processa pagamentos confirmados e faz deploy automático"""
         try:
             if not payment_manager:
+                logger.warning("Payment manager não inicializado")
+                return
+            
+            # Verificar se payment_manager.payments é um dicionário
+            if not isinstance(payment_manager.payments, dict):
+                logger.error(f"Formato inválido de payments: {type(payment_manager.payments)}")
                 return
             
             # Obter pagamentos confirmados
             confirmed_payments = payment_manager.get_payments_by_status("paid")
             
+            # Verificar se confirmed_payments é uma lista
+            if not isinstance(confirmed_payments, list):
+                logger.error(f"Formato inválido de confirmed_payments: {type(confirmed_payments)}")
+                return
+            
             for payment in confirmed_payments:
-                payment_id = payment["id"]
-                user_id = payment["user_id"]
+                # Verificar se payment é um dicionário
+                if not isinstance(payment, dict):
+                    logger.error(f"Formato inválido de payment: {type(payment)}")
+                    continue
+                
+                payment_id = payment.get("id")
+                user_id = payment.get("user_id")
                 deploy_file = payment.get("deploy_file")
+                
+                if not payment_id or not user_id:
+                    logger.error(f"Dados inválidos no payment: {payment}")
+                    continue
                 
                 # Verificar se já foi processado
                 if payment.get("deploy_processed"):
@@ -48,6 +68,8 @@ class DeployManager:
                 
         except Exception as e:
             logger.error(f"Erro ao processar pagamentos confirmados: {e}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
     
     async def process_deploy(self, payment_id: str, user_id: int, zip_path: str):
         """Processa o deploy de uma aplicação"""

@@ -1,6 +1,6 @@
 {
   "deploy_price": 10.00,
-  "max_file_size_mb": 150,
+  "max_file_size_mb": 25,
   "ticket_timeout_minutes": 30,
   "payment_timeout_minutes": 30,
   "auto_deploy_enabled": true,

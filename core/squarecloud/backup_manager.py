@@ -29,7 +29,16 @@ class BackupManager:
         try:
             if os.path.exists(self.backup_data_file):
                 with open(self.backup_data_file, 'r', encoding='utf-8') as f:
-                    self.backup_data = json.load(f)
+                    data = json.load(f)
+                    # Verificar se é uma lista (formato antigo) e converter para dicionário
+                    if isinstance(data, list):
+                        logger.warning("Formato antigo de backups.json detectado (lista). Convertendo para dicionário...")
+                        self.backup_data = {}
+                        # Se havia dados na lista, tentar preservar (mas geralmente lista vazia)
+                        if data:
+                            logger.warning("Dados na lista serão perdidos na conversão")
+                    else:
+                        self.backup_data = data
                 logger.info(f"📦 {len(self.backup_data)} registros de backup carregados")
             else:
                 self.save_backup_data()

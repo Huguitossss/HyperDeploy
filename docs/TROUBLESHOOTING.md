@@ -601,7 +601,7 @@ async def measure_performance(func, *args, **kwargs):
 ### Canais de Suporte
 - **Discord**: Servidor oficial do HyperDeploy
 - **GitHub**: Issues do projeto
-- **Email**: suporte@hyperdeploy.com
+- **Email**: suporte@exemplo.com
 
 ### Informações para Suporte
 Ao reportar um problema, inclua:

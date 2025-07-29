@@ -346,8 +346,8 @@ NODE_ENV=production
 # Configurações de Email
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-EMAIL_USER=seu@email.com
-EMAIL_PASS=senha_do_email
+EMAIL_USER=seu_email_aqui@exemplo.com
+EMAIL_PASS=sua_senha_aqui
 
 # Configurações de Pagamento
 MERCADOPAGO_ACCESS_TOKEN=SEU_ACCESS_TOKEN_MERCADOPAGO_AQUI

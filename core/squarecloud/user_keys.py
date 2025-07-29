@@ -14,7 +14,16 @@ class UserKeysManager:
         try:
             if os.path.exists(self.keys_file):
                 with open(self.keys_file, 'r', encoding='utf-8') as f:
-                    self.user_keys = json.load(f)
+                    data = json.load(f)
+                    # Verificar se é uma lista (formato antigo) e converter para dicionário
+                    if isinstance(data, list):
+                        logger.warning("Formato antigo de user_keys.json detectado (lista). Convertendo para dicionário...")
+                        self.user_keys = {}
+                        # Se havia dados na lista, tentar preservar (mas geralmente lista vazia)
+                        if data:
+                            logger.warning("Dados na lista serão perdidos na conversão")
+                    else:
+                        self.user_keys = data
                 logger.info(f"{len(self.user_keys)} chaves de usuários carregadas")
             else:
                 self.save_keys()

@@ -19,7 +19,16 @@ class DomainManager:
         try:
             if os.path.exists(self.domain_data_file):
                 with open(self.domain_data_file, 'r', encoding='utf-8') as f:
-                    self.domain_data = json.load(f)
+                    data = json.load(f)
+                    # Verificar se é uma lista (formato antigo) e converter para dicionário
+                    if isinstance(data, list):
+                        logger.warning("Formato antigo de domains.json detectado (lista). Convertendo para dicionário...")
+                        self.domain_data = {}
+                        # Se havia dados na lista, tentar preservar (mas geralmente lista vazia)
+                        if data:
+                            logger.warning("Dados na lista serão perdidos na conversão")
+                    else:
+                        self.domain_data = data
                 logger.info(f"🌐 {len(self.domain_data)} registros de domínios carregados")
             else:
                 self.save_domain_data()

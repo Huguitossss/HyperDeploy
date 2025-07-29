@@ -71,8 +71,8 @@ GUILD_ID=1175572640568709180
 SQUARECLOUD_API_KEY=sua_api_key_aqui
 
 # PixGG
-PIXGG_EMAIL=seu_email@pixgg.com
-PIXGG_PASSWORD=sua_senha_pixgg
+PIXGG_EMAIL=seu_email_aqui@exemplo.com
+PIXGG_PASSWORD=sua_senha_aqui
 PRECO_DEPLOY=10.00
 ```
 

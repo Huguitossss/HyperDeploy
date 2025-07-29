@@ -49,6 +49,25 @@ class UploadManager:
     
     async def process_upload(self, message: discord.Message) -> Optional[Dict]:
         try:
+            # VERIFICAÇÃO DE PERMISSÕES - Apenas o dono do ticket pode fazer upload
+            from core.tickets.manager import ticket_manager
+            
+            if not ticket_manager:
+                await message.channel.send("❌ Sistema de tickets não disponível.", delete_after=5)
+                return None
+            
+            # Verificar se o usuário tem acesso ao ticket
+            if not ticket_manager.has_ticket_access(message.author.id, message.channel.id):
+                await message.channel.send("❌ Você não tem permissão para fazer upload neste ticket.", delete_after=5)
+                await self.log_unauthorized_upload(message.author.id, message.channel.id)
+                return None
+            
+            # Verificar se o usuário é o dono do ticket
+            if not ticket_manager.is_ticket_owner(message.author.id, message.channel.id):
+                await message.channel.send("❌ Apenas o dono do ticket pode fazer upload.", delete_after=5)
+                await self.log_unauthorized_upload(message.author.id, message.channel.id)
+                return None
+            
             if not message.attachments:
                 return None
             attachment = message.attachments[0]
@@ -380,6 +399,19 @@ class UploadManager:
             )
         except Exception as e:
             logger.error(f"Erro ao logar erro de pagamento: {e}")
+
+    async def log_unauthorized_upload(self, user_id: int, channel_id: int):
+        """Log de tentativa de upload não autorizado"""
+        try:
+            from core.logs.organized_logger import log_action
+            await log_action(
+                user_id=user_id,
+                action="Tentativa de Upload Não Autorizado",
+                details=f"Usuário: {user_id} | Canal: {channel_id}",
+                success=False
+            )
+        except Exception as e:
+            logger.error(f"Erro ao logar tentativa de upload não autorizado: {e}")
 
 async def send_qr_code(channel, user_id, payment_id, valor, file_path):
     """Envia QR Code do PIX no canal"""

@@ -81,12 +81,18 @@ pip install -r requirements.txt
 1. Acesse o [Discord Developer Portal](https://discord.com/developers/applications)
 2. Crie uma nova aplicação
 3. Vá em "Bot" e copie o token
-4. Copie os arquivos de exemplo:
+4. Configure as permissões necessárias:
+   - `Use Slash Commands`
+   - `Send Messages`
+   - `Manage Channels`
+   - `Attach Files`
+   - `Read Message History`
+5. Copie os arquivos de exemplo:
 ```bash
 cp config/bot.example.yaml config/bot.yaml
 cp config/squarecloud.example.yaml config/squarecloud.yaml
 ```
-5. Edite `config/bot.yaml` com suas credenciais:
+6. Edite `config/bot.yaml` com suas credenciais:
 ```yaml
 bot_token: "SEU_TOKEN_DISCORD_AQUI"
 guild_id: SEU_GUILD_ID_AQUI
@@ -94,9 +100,22 @@ mercadopago_access_token: "SEU_ACCESS_TOKEN_MERCADOPAGO_AQUI"
 ```
 
 ### 4. Configurar Square Cloud
-Edite `config/squarecloud.yaml`:
+1. Acesse [Square Cloud](https://squarecloud.app)
+2. Faça login na sua conta
+3. Vá em "Minha Conta" > "API"
+4. Clique em "Gerar Nova Chave"
+5. Edite `config/squarecloud.yaml`:
 ```yaml
 api_key: "SUA_API_KEY_SQUARECLOUD_AQUI"
+```
+
+### 5. Configurar Mercado Pago (Opcional)
+1. Acesse [Mercado Pago Developers](https://developers.mercadopago.com)
+2. Crie uma conta de desenvolvedor
+3. Gere um Access Token
+4. Adicione no `config/bot.yaml`:
+```yaml
+mercadopago_access_token: "SEU_ACCESS_TOKEN_MERCADOPAGO_AQUI"
 ```
 
 ### 5. Configurar Mercado Pago

@@ -149,7 +149,7 @@ Navegação completa e organizada de toda a documentação do HyperDeploy.
 - **Issues**: [Reportar problemas](https://github.com/seu-usuario/HyperDeploy/issues)
 
 ### **Suporte**
-- **Email**: suporte@hyperdeploy.com
+- **Email**: suporte@exemplo.com
 - **Documentação**: Esta seção
 - **FAQ**: [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 

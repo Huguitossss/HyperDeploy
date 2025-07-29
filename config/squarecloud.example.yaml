@@ -24,6 +24,6 @@ auto_deploy:
 
 # Configurações de validação de arquivos
 validation:
-  max_file_size_mb: 100              # Tamanho máximo do arquivo ZIP
+  max_file_size_mb: 25               # Tamanho máximo do arquivo ZIP
   allowed_extensions: [".zip"]        # Extensões permitidas
   check_file_structure: true          # Verificar estrutura do arquivo 
